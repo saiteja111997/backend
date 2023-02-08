@@ -1,0 +1,182 @@
+// package server
+
+// import (
+// 	"encoding/json"
+// 	"fmt"
+// 	"log"
+// 	"net/http"
+// 	"os"
+
+// 	"github.com/gorilla/websocket"
+// )
+
+// // AllRooms is the global hashmap for the server
+// var AllRooms RoomMap
+
+// // var videoBuffer []byte
+// var audioBuffer []byte
+
+// // Enable CORS to set the header as origin
+// func enableCors(w *http.ResponseWriter) {
+// 	// (*w).Header().Set("Access-Control-Allow-Origin", "https://projectai-ba364.web.app")
+// 	(*w).Header().Set("Access-Control-Allow-Origin", "http://localhost:3000")
+// }
+
+// // func createMp4File(videoBytes []byte) {
+// // 	// Create a new MP4 file
+// // 	file, err := os.Create("video.mp4")
+// // 	if err != nil {
+// // 		panic(err)
+// // 	}
+// // 	defer file.Close()
+
+// // 	// Write the video data to the file
+// // 	_, err = file.Write(videoBytes)
+// // 	if err != nil {
+// // 		panic(err)
+// // 	}
+// // }
+
+// func createWavFile(audioBytes []byte) {
+// 	// Create a new file for the audio data
+// 	file, err := os.Create("audio.opus")
+// 	if err != nil {
+// 		log.Fatal(err)
+// 	}
+
+// 	// Write the audio bytes to the file
+// 	_, err = file.Write(audioBytes)
+// 	if err != nil {
+// 		log.Fatal(err)
+// 	}
+
+// 	// Close the file
+// 	err = file.Close()
+// 	if err != nil {
+// 		log.Fatal(err)
+// 	}
+// }
+
+// // CreateRoomRequestHandler Create a Room and return roomID
+// func CreateRoomRequestHandler(w http.ResponseWriter, r *http.Request) {
+// 	AllRooms.InitiateRoom()
+// 	log.Println("The initialized map is : ", AllRooms.Map)
+// 	enableCors(&w)
+// 	// w.Header().Set("Access-Control-Allow-Origin", "https://projectai-ba364.web.app/")
+// 	// w.Header().Set("Access-Control-Allow-Origin", "http://localhost:3000")
+// 	roomID := AllRooms.CreateRoom()
+
+// 	type resp struct {
+// 		RoomID string `json:"room_id"`
+// 	}
+// 	fmt.Println("The Header reponse is : ", w.Header().Get("Access-Control-Allow-Origin"))
+// 	json.NewEncoder(w).Encode(resp{RoomID: roomID})
+// }
+
+// var upgrader = websocket.Upgrader{
+// 	CheckOrigin: func(r *http.Request) bool {
+// 		return true
+// 	},
+// }
+
+// type broadcastMsg struct {
+// 	Message map[string]interface{}
+// 	RoomID  string
+// 	Client  *websocket.Conn
+// }
+
+// var broadcast = make(chan broadcastMsg)
+
+// func broadcaster() {
+// 	for {
+// 		msg := <-broadcast
+// 		AllRooms.Mutex.Lock()
+// 		for _, client := range AllRooms.Map[msg.RoomID] {
+// 			if client.Conn != msg.Client {
+// 				err := client.Conn.WriteJSON(msg.Message)
+// 				if err != nil {
+// 					log.Printf("Connection has been closed due to the following reason : %s", err)
+// 					fmt.Println("Closing the websocket connection!!")
+// 					client.Conn.Close()
+// 				}
+// 			}
+// 		}
+// 		AllRooms.Mutex.Unlock()
+// 	}
+// }
+
+// // JoinRoomRequestHandler will join the client in a particular room
+// func JoinRoomRequestHandler(w http.ResponseWriter, r *http.Request) {
+// 	roomID, ok := r.URL.Query()["roomID"]
+// 	fmt.Println("Entered!!")
+
+// 	if !ok {
+// 		log.Println("roomID missing in URL Parameters")
+// 		return
+// 	}
+
+// 	ws, err := upgrader.Upgrade(w, r, nil)
+// 	if err != nil {
+// 		log.Fatal(err)
+// 	}
+// 	defer ws.Close()
+// 	if err != nil {
+// 		log.Fatal("Web Socket Upgrade Error", err)
+// 	}
+
+// 	AllRooms.InsertIntoRoom(roomID[0], false, ws)
+// 	count := 0
+
+// 	go broadcaster()
+
+// 	for {
+// 		var msg broadcastMsg
+
+// 		_, message, err := ws.ReadMessage()
+// 		if err != nil {
+// 			log.Fatal(err)
+// 		}
+// 		err = json.Unmarshal(message, &msg.Message)
+// 		if err != nil {
+// 			fmt.Println("This is a stream message!!")
+// 			fmt.Println("The length of the buffer is : ", len(message))
+// 			audioBuffer = append(audioBuffer, message...)
+// 		} else {
+
+// 			if msg.Message["stopRecoridng"] != nil {
+// 				createWavFile(audioBuffer)
+// 			}
+
+// 			msg.Client = ws
+// 			msg.RoomID = roomID[0]
+// 			log.Println("Msg id : ", count)
+// 			log.Println("Here is a message : ", msg.Message)
+// 			count++
+
+// 			broadcast <- msg
+// 		}
+
+// 	}
+// }
+
+// if msg.Message["audioData"] != nil {
+// 	fmt.Println("The type of the data received from the client is : ", reflect.TypeOf(msg.Message["audioData"]))
+// 	fmt.Println("Data is : ", msg.Message["audioData"])
+// 	// // Create new file
+// 	// file, err := os.Create("audio.webm")
+// 	// if err != nil {
+// 	// 	log.Fatal("File Creation Error : ", err)
+// 	// }
+// 	// defer file.Close()
+
+// 	// // Copy data to the file
+// 	// if _, err := io.Copy(file, ws); err != nil {
+// 	// 	log.Fatal("File Copy Error : ", err)
+// 	// }
+// }
+
+
+
+
+
+
