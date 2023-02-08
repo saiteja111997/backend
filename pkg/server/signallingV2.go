@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -187,7 +188,10 @@ func TranscribeAudioHandler(c *gin.Context) {
 		return
 	}
 
-	req.Header.Set("Authorization", "004429a5e8a74d349a8bf40ea94b8c27")
+	assemblyAiApiKey := os.Getenv("ASSEMBLY_AI_API_KEY")
+	fmt.Println(assemblyAiApiKey)
+
+	req.Header.Set("Authorization", assemblyAiApiKey)
 	req.Header.Set("Content-Type", "application/json")
 
 	res, err := client.Do(req.WithContext(context.Background()))
@@ -224,7 +228,7 @@ func TranscribeAudioHandler(c *gin.Context) {
 			fmt.Println("failed to create a new request!!")
 			return
 		}
-		req.Header.Set("Authorization", "004429a5e8a74d349a8bf40ea94b8c27")
+		req.Header.Set("Authorization", assemblyAiApiKey)
 		res, err := client.Do(req.WithContext(context.Background()))
 		if err != nil {
 			return
@@ -263,7 +267,11 @@ func getUploadUrl(audioBytes []byte, ch chan string) {
 	if err != nil {
 		return
 	}
-	req.Header.Set("Authorization", "004429a5e8a74d349a8bf40ea94b8c27")
+
+	assemblyAiApiKey := os.Getenv("ASSEMBLY_AI_API_KEY")
+	fmt.Println(assemblyAiApiKey)
+
+	req.Header.Set("Authorization", assemblyAiApiKey)
 	req.Header.Set("Content-Type", "application/octet-stream")
 
 	res, err := client.Do(req.WithContext(context.Background()))
@@ -323,7 +331,10 @@ func GenerateFinalResult(c *gin.Context) {
 		return
 	}
 
-	req.Header.Set("Authorization", "004429a5e8a74d349a8bf40ea94b8c27")
+	assemblyAiApiKey := os.Getenv("ASSEMBLY_AI_API_KEY")
+	fmt.Println(assemblyAiApiKey)
+
+	req.Header.Set("Authorization", assemblyAiApiKey)
 	req.Header.Set("Content-Type", "application/json")
 
 	res, err := client.Do(req.WithContext(context.Background()))
@@ -355,7 +366,10 @@ func GenerateFinalResult(c *gin.Context) {
 
 // 	prompt := text + "Get updates of Siddharth for the current and next sprints based on the below conversation."
 
-// 	client := gogpt.NewClient("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")
+// openAiApiKey := os.Getenv("OPEN_AI_API_KEY")
+// 	fmt.Println(openAiApiKey)
+
+// 	client := gogpt.NewClient(openAiApiKey)
 // 	ctx := context.Background()
 
 // 	req := gogpt.CompletionRequest{
@@ -406,8 +420,11 @@ func GenerateFinalResult(c *gin.Context) {
 // 		return
 // 	}
 
+// openAiApiKey := os.Getenv("OPEN_AI_API_KEY")
+// 	fmt.Println(openAiApiKey)
+
 // 	req.Header.Add("Content-Type", "application/json")
-// 	req.Header.Add("Authorization", "Bearer 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")
+// 	req.Header.Add("Authorization", "Bearer " + openAiApiKey)
 
 // 	client := http.Client{}
 // 	res, err := client.Do(req)
